@@ -6,6 +6,11 @@ import threading
 import argparse
 import ctypes
 
+# Use sys.argv[0] to get the path to the running script
+script_path = os.path.abspath(sys.argv[0])
+script_directory = os.path.dirname(script_path)
+os.chdir(script_directory)
+
 def create_hard_link(source_path, destination_path):
     try:
         # Create a hard link
