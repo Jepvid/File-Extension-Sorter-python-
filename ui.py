@@ -41,8 +41,11 @@ def start_processing():
     if use_symlink and use_hardlink:
         show_error_message("Error: Cannot use -spacesave and -spacesaveadmin at the same time.")
         return
+    if delete_source and (use_symlink or use_hardlink):
+        show_error_message("Warning: Using -deletesource with -spacesave or -spacesaveadmin will result in dataloss. Disable either arguments for it to work")
+        return
 
-    # Get the path to the media-organizer.py script in the same folder as ui.py
+    # Get the path to the organize-media.py script in the same folder as ui.py
     ui_folder = os.path.dirname(__file__)
     media_organizer_path = os.path.join(ui_folder, "organize-media.py")
 
@@ -60,7 +63,7 @@ def start_processing():
     if use_hardlink:
         command.append("-spacesaveadmin")
     if delete_source:
-        command.append("-delete_source")
+        command.append("-deletesource")
 
     # Run your script in a separate thread to avoid blocking the UI
     def run_script():
@@ -69,6 +72,7 @@ def start_processing():
     # Start a new thread to run the script
     script_thread = Thread(target=run_script)
     script_thread.start()
+
 
 # Create the main window
 root = tk.Tk()
