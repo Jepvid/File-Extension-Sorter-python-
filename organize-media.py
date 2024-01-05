@@ -5,11 +5,51 @@ import sys
 import threading
 import argparse
 import ctypes
+from PIL import Image
+from moviepy.editor import VideoFileClip
 
 # Use sys.argv[0] to get the path to the running script
 script_path = os.path.abspath(sys.argv[0])
 script_directory = os.path.dirname(script_path)
 os.chdir(script_directory)
+
+def replicate_folder_structure(source, destination):
+    for root, dirs, files in os.walk(source):
+        for dir in dirs:
+            dir_path = os.path.join(root.replace(source, destination), dir)
+            os.makedirs(dir_path, exist_ok=True)
+
+def convert_images_to_png(source, destination):
+    for root, dirs, files in os.walk(source):
+        for file in files:
+            if file.lower().endswith(('.jpg', '.jpeg', '.png', '.bmp')):
+                input_path = os.path.join(root, file)
+                output_path = os.path.join(destination, os.path.relpath(input_path, source))
+                output_path = os.path.splitext(output_path)[0] + ".png"
+                os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                
+                image = Image.open(input_path)
+                image.save(output_path, format="PNG")
+
+def organize_videos_by_resolution(source):
+    for root, dirs, files in os.walk(source):
+        for file in files:
+            if file.lower().endswith(('.mp4', '.avi', '.mkv', '.mov')):  # Add more video formats if needed
+                video_path = os.path.join(root, file)
+                
+                # Get video resolution using moviepy
+                video_clip = VideoFileClip(video_path)
+                resolution = video_clip.size
+
+                # Choose the lowest resolution value
+                lowest_resolution = min(resolution)
+                resolution_folder = f"{lowest_resolution}p"
+                
+                # Move the video to the resolution folder
+                destination_folder = os.path.join(destination_directory, resolution_folder)
+                os.makedirs(destination_folder, exist_ok=True)
+                shutil.move(video_path, os.path.join(destination_folder, file))
+
 
 def create_hard_link(source_path, destination_path):
     try:
@@ -186,6 +226,10 @@ if __name__ == "__main__":
     source_folder = args.source_folder if not args.input else args.input
     destination_folder = args.destination_folder if not args.output else args.output
 
+    replicate_folder_structure(source_folder, destination_folder)
+    convert_images_to_png(source_folder, destination_folder)
+    organize_videos_by_resolution(source_folder)
+    
     copy_and_organize(
         source_folder,
         destination_folder,
