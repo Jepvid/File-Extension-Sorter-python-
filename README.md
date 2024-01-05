@@ -6,3 +6,8 @@ By running ui.py using python you can use the ui to set it up.
 Both files needs to be in the same folder
 
 the executable is standalone
+
+
+Make sure to have moviepy and pillow installed
+
+pip install Pillow moviepy
